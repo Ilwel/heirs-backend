@@ -1,7 +1,8 @@
 import 'reflect-metadata'
-import coreApp from './app'
+import App from './app'
 
 // eslint-disable-next-line
 (async function init () {
-  await coreApp.start()
+  const app = new App()
+  await app.start()
 })()

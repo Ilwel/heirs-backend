@@ -5,14 +5,16 @@ import { startStandaloneServer } from '@apollo/server/standalone'
 import { ApolloServer } from '@apollo/server'
 import { context } from './context'
 import Container from 'typedi'
+import { ServerCatch } from './decorators/catchs'
 
 interface IStartServer {
   server: ApolloServer
   url: string
 }
 
-const start = async (): Promise<IStartServer | undefined> => {
-  try {
+export default class App {
+  @ServerCatch
+  public async start (): Promise<IStartServer | undefined> {
     const schema = await buildSchema({
       resolvers: [...resolvers, ...relationResolvers],
       validate: false,
@@ -31,22 +33,10 @@ const start = async (): Promise<IStartServer | undefined> => {
     console.log(`🦖 sweet! the server is working at ${url}`)
 
     return { server, url }
-  } catch (error: any) {
-    console.log('😥 oh no! an uncaught error ocurred!')
-    if (error instanceof Error) {
-      console.log(`😥 here's the message: ${error?.message}`)
-    } else {
-      console.log(`😥 there's no message, here the whole thing: ${error}`)
-    }
   }
-}
 
-const stop = async (startServer: IStartServer): Promise<void> => {
-  console.log(`😴 stopping the process at ${startServer.url}`)
-  await startServer.server.stop()
-}
-
-export default {
-  start,
-  stop
+  public async stop (startServer: IStartServer): Promise<void> {
+    console.log(`😴 stopping the process at ${startServer.url}`)
+    await startServer.server.stop()
+  }
 }
