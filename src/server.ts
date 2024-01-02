@@ -3,7 +3,8 @@ import { ApolloServer } from '@apollo/server'
 import { startStandaloneServer } from '@apollo/server/standalone'
 import { buildSchema } from 'type-graphql'
 import { PrismaClient } from '@prisma/client'
-import { relationResolvers, resolvers } from '../prisma/generated/type-graphql'
+import { relationResolvers } from '../prisma/generated/type-graphql'
+import resolvers from './graphql/resolvers'
 
 interface IContext {
   prisma: PrismaClient
