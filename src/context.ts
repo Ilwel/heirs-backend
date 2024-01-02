@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 
-interface IContext {
+export interface IContext {
   prisma: PrismaClient
 }
 
