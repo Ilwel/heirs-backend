@@ -3,7 +3,7 @@ import { ApolloServer } from '@apollo/server'
 import { startStandaloneServer } from '@apollo/server/standalone'
 import { buildSchema } from 'type-graphql'
 import { PrismaClient } from '@prisma/client'
-import { resolvers } from '../prisma/generated/type-graphql'
+import { relationResolvers, resolvers } from '../prisma/generated/type-graphql'
 
 interface IContext {
   prisma: PrismaClient
@@ -22,7 +22,7 @@ export const context = async (): Promise<IContext> => {
 // eslint-disable-next-line
 (async function init () {
   const schema = await buildSchema({
-    resolvers: [...resolvers],
+    resolvers: [...resolvers, ...relationResolvers],
     validate: false
   })
 
@@ -32,7 +32,7 @@ export const context = async (): Promise<IContext> => {
 
   const { url } = await startStandaloneServer(server, {
     context,
-    listen: { port: 4000 }
+    listen: { port: 3000 }
   })
 
   console.log(url)
