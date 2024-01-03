@@ -16,6 +16,7 @@ datasource db {
 }
 
 model User {
+  /// @TypeGraphQL.omit(input: true)
   id        String   @unique @default(uuid())
   username  String   @unique
   /// @TypeGraphQL.omit(output: true)
@@ -28,6 +29,7 @@ model User {
 }
 
 model Board {
+  /// @TypeGraphQL.omit(input: true)
   id      String   @unique @default(uuid())
   players Player[]
   status  String   @default("NOT_STARTED")
@@ -39,11 +41,11 @@ model Player {
   id       String  @unique @default(uuid())
   user     User    @relation(fields: [userId], references: [id])
   userId   String  @unique
-  // @TypeGraphQL.omit(input: true)
-  money    Int     @default(0)
-  // @TypeGraphQL.omit(input: true)
+  /// @TypeGraphQL.omit(input: true)
+  money    String  @default("0")
+  /// @TypeGraphQL.omit(input: true)
   square   String  @default("INIT")
-  // @TypeGraphQL.omit(input: true)
+  /// @TypeGraphQL.omit(input: true)
   palyable Boolean @default(false)
   Board    Board?  @relation(fields: [boardId], references: [id])
   boardId  String?

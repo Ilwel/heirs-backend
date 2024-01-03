@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "players" ALTER COLUMN "money" SET DEFAULT '0',
+ALTER COLUMN "money" SET DATA TYPE TEXT;
