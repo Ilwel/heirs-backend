@@ -30,6 +30,7 @@ model User {
 model Board {
   id      String   @unique @default(uuid())
   players Player[]
+  status  String   @default("NOT_STARTED")
 
   @@map("boards")
 }
