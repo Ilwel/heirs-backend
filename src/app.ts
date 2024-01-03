@@ -4,7 +4,7 @@ import { relationResolvers } from '../prisma/generated/type-graphql'
 import { startStandaloneServer } from '@apollo/server/standalone'
 import { ApolloServer } from '@apollo/server'
 import { context } from './context'
-import Container from 'typedi'
+import Container, { Service } from 'typedi'
 import { ServerCatch } from './decorators/catchs'
 
 interface IStartServer {
@@ -15,6 +15,10 @@ interface IStartServer {
 export default class App {
   @ServerCatch
   public async start (): Promise<IStartServer | undefined> {
+    for (const realtion of relationResolvers) {
+      Service()(realtion)
+    }
+
     const schema = await buildSchema({
       resolvers: [...resolvers, ...relationResolvers],
       validate: false,
