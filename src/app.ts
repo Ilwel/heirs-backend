@@ -5,7 +5,7 @@ import { startStandaloneServer } from '@apollo/server/standalone'
 import { ApolloServer } from '@apollo/server'
 import { context } from './context'
 import Container, { Service } from 'typedi'
-import { ServerCatch } from './decorators/catchs'
+import { ServerCatch } from './decorators/catchs.decorator'
 
 interface IStartServer {
   server: ApolloServer
