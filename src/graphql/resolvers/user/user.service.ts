@@ -19,10 +19,8 @@ export class CreateUser {
 @Service()
 export default class UserService {
   async signUp (ctx: IContext, createUser: CreateUser): Promise<User> {
-    const salt = await bcrypt.genSalt(10)
-    const hashedPass = await bcrypt.hash(createUser.password, salt)
     const userCreated = await ctx.prisma.user.create({
-      data: createUserPrismaQuery(createUser.username, hashedPass)
+      data: createUserPrismaQuery(createUser.username, await this.hash(createUser.password))
     })
     return userCreated
   }
@@ -57,5 +55,11 @@ export default class UserService {
       })
       return newToken
     }
+  }
+
+  private async hash (toHash: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10)
+    const hashed = await bcrypt.hash(toHash, salt)
+    return hashed
   }
 }
