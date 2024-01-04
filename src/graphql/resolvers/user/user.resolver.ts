@@ -1,9 +1,9 @@
 import { Args, Ctx, Mutation, Resolver } from 'type-graphql'
-import { User } from '../../../../prisma/generated/type-graphql'
+import { type Token, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
 import { IContext } from '../../../context'
-import { PrismaCatch } from '../../../decorators/catchs'
+import { PrismaCatch } from '../../../decorators/catchs.decorator'
 
 @Service()
 @Resolver(of => User)
@@ -20,5 +20,15 @@ export default class UserResolver {
       console.log('🦖 sweet! an user has been created')
     }
     return user
+  }
+
+  @Mutation(() => User)
+  @PrismaCatch
+  public async signIn (@Ctx() ctx: IContext, @Args() signInUser: CreateUser): Promise<Token | undefined> {
+    const token = await this.userService.signIn(ctx, signInUser)
+    if (token.session.length > 0) {
+      console.log('🦖 sweet! an user logged in')
+    }
+    return token
   }
 }
