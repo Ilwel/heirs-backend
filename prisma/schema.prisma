@@ -16,7 +16,6 @@ datasource db {
 }
 
 model User {
-  /// @TypeGraphQL.omit(input: true)
   id        String    @unique @default(uuid())
   username  String    @unique
   /// @TypeGraphQL.omit(output: true)
@@ -30,7 +29,6 @@ model User {
 }
 
 model Board {
-  /// @TypeGraphQL.omit(input: true)
   id        String   @unique @default(uuid())
   players   Player[]
   status    String   @default("NOT_STARTED")
