@@ -16,14 +16,17 @@ datasource db {
 }
 
 model User {
-  id        String    @unique @default(uuid())
-  username  String    @unique
+  id         String       @unique @default(uuid())
+  username   String       @unique
   /// @TypeGraphQL.omit(output: true)
-  password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  player    Player?
-  Token     Session[]
+  password   String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  role       String       @default("PLAYER")
+  player     Player?
+  Token      Session[]
+  followedBy Friendship[] @relation("followedBy")
+  following  Friendship[] @relation("following")
 
   @@map("users")
 }
@@ -65,4 +68,17 @@ model Session {
   expired   Boolean  @default(false)
 
   @@map("sessions")
+}
+
+model Friendship {
+  id           String   @unique @default(uuid())
+  followedBy   User     @relation("followedBy", fields: [followedById], references: [id])
+  followedById String
+  following    User     @relation("following", fields: [followingId], references: [id])
+  followingId  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@id([followingId, followedById])
+  @@map("friendships")
 }
