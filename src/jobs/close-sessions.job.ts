@@ -13,7 +13,7 @@ export async function closeSessionsJob (): Promise<void> {
   for (const token of tokens) {
     const hoursDif = Math.round(Math.abs(new Date().getTime() - token.createdAt.getTime()) / 36e5)
     console.log('🦖 hours dif: ', hoursDif)
-    if (hoursDif > 8) {
+    if (hoursDif >= 8) {
       await ctx.prisma.token.update({
         where: {
           session: token.session
