@@ -11,6 +11,17 @@ const userNotFoundLogAndError = () => {
   })
 }
 
+const sessionExpiredOrNotFound = () => {
+  console.error('😥 session expired or not found')
+  return new GraphQLError('😥 session expired or not found', {
+    extensions: {
+      code: 'UNAUTHORIZED',
+      fullMessage: '😥 session expired or not found'
+    }
+  })
+}
+
 export {
-  userNotFoundLogAndError
+  userNotFoundLogAndError,
+  sessionExpiredOrNotFound
 }

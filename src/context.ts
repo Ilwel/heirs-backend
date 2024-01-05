@@ -1,14 +1,17 @@
+import { type StandaloneServerContextFunctionArgument } from '@apollo/server/dist/esm/standalone'
 import { PrismaClient } from '@prisma/client'
 
 export interface IContext {
   prisma: PrismaClient
+  token: string
 }
 
-const prisma = new PrismaClient()
+export const prisma = new PrismaClient()
 
-export const context = async (): Promise<IContext> => {
+export const context = async ({ req }: StandaloneServerContextFunctionArgument): Promise<IContext> => {
   const context = {
-    prisma
+    prisma,
+    token: req.headers.authorization ?? ''
   }
 
   return context

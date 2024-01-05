@@ -1,9 +1,9 @@
-import { context } from '../context'
+import { prisma } from '../context'
 
 export async function closeSessionsJob (): Promise<void> {
   console.log('🦖 sweet! we closing all the server sessions now')
   console.log('🦖 this job happens every 8 hours')
-  const ctx = await context()
+  const ctx = { prisma }
   const sessions = await ctx.prisma.session.findMany({
     where: {
       expired: false

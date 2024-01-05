@@ -7,6 +7,7 @@ import { context } from './context'
 import Container, { Service } from 'typedi'
 import { ServerCatch } from './decorators/catchs.decorator'
 import jobs from './jobs'
+import { CustomAuthChecker } from './auth/auth.checker'
 
 interface IStartServer {
   server: ApolloServer
@@ -23,7 +24,8 @@ export default class App {
     const schema = await buildSchema({
       resolvers: [...resolvers, ...relationResolvers],
       validate: false,
-      container: Container
+      container: Container,
+      authChecker: CustomAuthChecker
     })
 
     const server = new ApolloServer({
