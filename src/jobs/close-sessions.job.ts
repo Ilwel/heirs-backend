@@ -11,7 +11,7 @@ export async function closeSessionsJob (): Promise<void> {
   })
 
   for (const session of sessions) {
-    const hoursDif = Math.round(Math.abs(new Date().getTime() - session.createdAt.getTime()) / 36e5)
+    const hoursDif = Math.abs(new Date().getTime() - session.createdAt.getTime()) / 36e5
     console.log('🦖 hours dif: ', hoursDif)
     if (hoursDif >= 8) {
       await ctx.prisma.session.update({
