@@ -6,6 +6,7 @@ import { ApolloServer } from '@apollo/server'
 import { context } from './context'
 import Container, { Service } from 'typedi'
 import { ServerCatch } from './decorators/catchs.decorator'
+import jobs from './jobs'
 
 interface IStartServer {
   server: ApolloServer
@@ -33,6 +34,8 @@ export default class App {
       context,
       listen: { port: 3000 }
     })
+
+    jobs()
 
     console.log(`🦖 sweet! the server is working at ${url}`)
 
