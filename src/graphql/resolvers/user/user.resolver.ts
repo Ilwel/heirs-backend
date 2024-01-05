@@ -1,5 +1,5 @@
 import { Args, Ctx, Mutation, Resolver } from 'type-graphql'
-import { Token, User } from '../../../../prisma/generated/type-graphql'
+import { Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
 import { IContext } from '../../../context'
@@ -22,13 +22,13 @@ export default class UserResolver {
     return user
   }
 
-  @Mutation(() => Token)
+  @Mutation(() => Session)
   @PrismaCatch
-  public async signIn (@Ctx() ctx: IContext, @Args() signInUser: CreateUser): Promise<Token | undefined> {
-    const token = await this.userService.signIn(ctx, signInUser)
-    if (token.session.length > 0) {
+  public async signIn (@Ctx() ctx: IContext, @Args() signInUser: CreateUser): Promise<Session | undefined> {
+    const session = await this.userService.signIn(ctx, signInUser)
+    if (session.token.length > 0) {
       console.log('🦖 sweet! an user logged in')
     }
-    return token
+    return session
   }
 }

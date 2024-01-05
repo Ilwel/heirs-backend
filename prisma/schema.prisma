@@ -17,14 +17,14 @@ datasource db {
 
 model User {
   /// @TypeGraphQL.omit(input: true)
-  id        String   @unique @default(uuid())
-  username  String   @unique
+  id        String    @unique @default(uuid())
+  username  String    @unique
   /// @TypeGraphQL.omit(output: true)
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   player    Player?
-  Token     Token[]
+  Token     Session[]
 
   @@map("users")
 }
@@ -58,13 +58,13 @@ model Player {
   @@map("players")
 }
 
-model Token {
-  session   String   @unique @default(uuid())
+model Session {
+  token     String   @unique @default(uuid())
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String
   expired   Boolean  @default(false)
 
-  @@map("tokens")
+  @@map("sessions")
 }
