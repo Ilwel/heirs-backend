@@ -19,7 +19,11 @@ export default class App {
   public async start (): Promise<IStartServer | undefined> {
     const resolversEnhanceMap: ResolversEnhanceMap = {
       Board: {
-        createOneBoard: [Authorized()]
+        createOneBoard: [Authorized()],
+        updateOneBoard: [Authorized()]
+      },
+      Player: {
+        updateManyPlayer: [Authorized('ADMIN')]
       }
     }
 
