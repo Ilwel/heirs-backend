@@ -1,13 +1,19 @@
 import { Authorized, buildSchema } from 'type-graphql'
 import resolvers from './graphql/resolvers'
 import { type ResolversEnhanceMap, relationResolvers, applyResolversEnhanceMap } from '../prisma/generated/type-graphql'
-import { startStandaloneServer } from '@apollo/server/standalone'
 import { ApolloServer } from '@apollo/server'
 import { context } from './context'
 import Container, { Service } from 'typedi'
 import { ServerCatch } from './decorators/catchs.decorator'
 import jobs from './jobs'
 import { CustomAuthChecker } from './auth/auth.checker'
+import express from 'express'
+import { createServer } from 'http'
+import { WebSocketServer } from 'ws'
+import { useServer } from 'graphql-ws/lib/use/ws'
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
+import cors from 'cors'
+import { expressMiddleware } from '@apollo/server/express4'
 
 interface IStartServer {
   server: ApolloServer
@@ -40,20 +46,53 @@ export default class App {
       authChecker: CustomAuthChecker
     })
 
-    const server = new ApolloServer({
-      schema
+    const app = express()
+    const httpServer = createServer(app)
+
+    const wsServer = new WebSocketServer({
+      server: httpServer,
+      path: '/subscriptions'
     })
 
-    const { url } = await startStandaloneServer(server, {
-      context,
-      listen: { port: 3000 }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const serverCleanup = useServer({ schema, context }, wsServer)
+
+    const server = new ApolloServer({
+      schema,
+      plugins: [
+        // Proper shutdown for the HTTP server.
+        ApolloServerPluginDrainHttpServer({ httpServer }),
+
+        // Proper shutdown for the WebSocket server.
+        {
+          async serverWillStart () {
+            return {
+              async drainServer () {
+                await serverCleanup.dispose()
+              }
+            }
+          }
+        }
+      ]
     })
+
+    await server.start()
+    app.use('/graphql',
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      cors<cors.CorsRequest>(),
+      express.json(),
+      expressMiddleware(server, {
+        context
+      })
+    )
+
+    await new Promise<void>((resolve) => httpServer.listen({ port: 3000 }, resolve))
 
     jobs()
 
-    console.log(`🦖 sweet! the server is working at ${url}`)
+    console.log('🦖 sweet! the server is working at http://localhost:3000/graphql')
 
-    return { server, url }
+    return { server, url: 'http://localhost:3000' }
   }
 
   public async stop (startServer: IStartServer): Promise<void> {
