@@ -3,3 +3,4 @@ yarn.lock
 /prisma/generated
 /build
 .env
+package-lock.json

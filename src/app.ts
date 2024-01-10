@@ -14,6 +14,7 @@ import { useServer } from 'graphql-ws/lib/use/ws'
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
 import cors from 'cors'
 import { expressMiddleware } from '@apollo/server/express4'
+import { pubSub } from './pubSub'
 
 interface IStartServer {
   server: ApolloServer
@@ -43,7 +44,8 @@ export default class App {
       resolvers: [...resolvers, ...relationResolvers],
       validate: false,
       container: Container,
-      authChecker: CustomAuthChecker
+      authChecker: CustomAuthChecker,
+      pubSub
     })
 
     const app = express()
@@ -51,7 +53,7 @@ export default class App {
 
     const wsServer = new WebSocketServer({
       server: httpServer,
-      path: '/subscriptions'
+      path: '/graphql'
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -86,11 +88,11 @@ export default class App {
       })
     )
 
-    await new Promise<void>((resolve) => httpServer.listen({ port: 3000 }, resolve))
+    httpServer.listen(3000, () => {
+      console.log('🦖 sweet! the server is working at http://localhost:3000/graphql')
+    })
 
     jobs()
-
-    console.log('🦖 sweet! the server is working at http://localhost:3000/graphql')
 
     return { server, url: 'http://localhost:3000' }
   }

@@ -11,7 +11,7 @@ export const prisma = new PrismaClient()
 export const context = async ({ req }: StandaloneServerContextFunctionArgument): Promise<IContext> => {
   const context = {
     prisma,
-    token: req.headers.authorization ?? ''
+    token: req?.headers.authorization ?? ''
   }
 
   return context

@@ -1,4 +1,4 @@
-import { Args, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
+import { Args, Authorized, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
 import { Friendship, Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
@@ -35,7 +35,29 @@ export default class UserResolver {
   @Subscription(() => [Friendship], {
     topics: 'FRIENDS'
   })
-  public getFriends (): void {
-
+  @Authorized()
+  public async getFriends (@Ctx() ctx: IContext): Promise<Friendship []> {
+    const session = await ctx.prisma.session.findUnique({
+      where: {
+        token: ctx.token
+      },
+      include: {
+        user: {
+          include: {
+            following: {
+              include: {
+                whosfollowedBy: true
+              }
+            }
+          }
+        }
+      }
+    })
+    if ((session?.user) != null) {
+      const user = session?.user
+      return user.following
+    } else {
+      throw Error('deu ruim')
+    }
   }
 }
