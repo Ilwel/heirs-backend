@@ -1,4 +1,4 @@
-import { Args, Ctx, Mutation, Resolver } from 'type-graphql'
+import { Args, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
 import { Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
@@ -30,5 +30,12 @@ export default class UserResolver {
       console.log('🦖 sweet! an user logged in')
     }
     return session
+  }
+
+  @Subscription({
+    topics: 'FRIENDS'
+  })
+  public async getFriends (): Promise<void> {
+
   }
 }
