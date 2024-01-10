@@ -1,5 +1,5 @@
 import { Args, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
-import { Session, User } from '../../../../prisma/generated/type-graphql'
+import { Friendship, Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
 import { IContext } from '../../../context'
@@ -32,10 +32,10 @@ export default class UserResolver {
     return session
   }
 
-  @Subscription({
+  @Subscription(() => [Friendship], {
     topics: 'FRIENDS'
   })
-  public async getFriends (): Promise<void> {
+  public getFriends (): void {
 
   }
 }
