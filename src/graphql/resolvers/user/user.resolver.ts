@@ -1,4 +1,4 @@
-import { Args, Authorized, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
+import { Arg, Args, Authorized, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
 import { Board, Friendship, Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
@@ -39,9 +39,16 @@ export default class UserResolver {
 
   @Mutation(() => Board)
   @Authorized()
-  public async createBoard (@Ctx() ctx: IContext): Promise<Board> {
+  public async createMyBoard (@Ctx() ctx: IContext): Promise<Board> {
     const board = await this.boardRepository.createBoardFromToken(ctx, ctx.token)
     return board
+  }
+
+  @Mutation(() => String)
+  @Authorized()
+  public async deleteMyBoard (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<string> {
+    const removed = await this.boardRepository.removeBoardFromToken(ctx, ctx.token, id)
+    return removed
   }
 
   @Mutation(() => String)
