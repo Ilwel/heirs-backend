@@ -58,7 +58,7 @@ export default class UserResolver {
   }
 
   @Subscription(() => [Friendship], {
-    topics: 'FRIENDS'
+    topics: ({ args, context }) => context.username
   })
   @Authorized()
   public async getFriends (@Ctx() ctx: IContext): Promise<Friendship [] | undefined> {

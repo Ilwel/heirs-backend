@@ -1,5 +1,3 @@
 import { createPubSub } from '@graphql-yoga/subscription'
 
-export const pubSub = createPubSub<{
-  FRIENDS: [string]
-}>()
+export const pubSub = createPubSub()

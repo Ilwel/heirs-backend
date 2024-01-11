@@ -2,6 +2,7 @@ import { Service } from 'typedi'
 import SessionRepository from '../session/session.repository'
 import { type IContext } from '../../../context'
 import { type Board } from '../../../../prisma/generated/type-graphql'
+import { pubSub } from '../../../pubSub'
 
 @Service()
 export class BoardRepository {
@@ -24,6 +25,25 @@ export class BoardRepository {
         }
       }
     })
+    const userDetails = await ctx.prisma.user.findUnique({
+      where: {
+        id: user.id
+      },
+      include: {
+        followedBy: {
+          include: {
+            whosFollowing: true
+          }
+        }
+      }
+    })
+    if ((userDetails?.followedBy) != null) {
+      for (const friend of userDetails.followedBy) {
+        if ((friend.whosFollowing?.username) != null) {
+          pubSub.publish(friend.whosFollowing?.username, 'my new board')
+        }
+      }
+    }
     return board
   }
 
@@ -55,6 +75,25 @@ export class BoardRepository {
             id: board.id
           }
         })
+        const userDetails = await ctx.prisma.user.findUnique({
+          where: {
+            id: user.id
+          },
+          include: {
+            followedBy: {
+              include: {
+                whosFollowing: true
+              }
+            }
+          }
+        })
+        if ((userDetails?.followedBy) != null) {
+          for (const friend of userDetails.followedBy) {
+            if ((friend.whosFollowing?.username) != null) {
+              pubSub.publish(friend.whosFollowing?.username, 'my new board')
+            }
+          }
+        }
         return 'board removed'
       }
     } else {
