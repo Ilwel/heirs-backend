@@ -4,6 +4,7 @@ import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
 import { IContext } from '../../../context'
 import { PrismaCatch } from '../../../decorators/catchs.decorator'
+import { pubSub } from '../../../pubSub'
 
 @Service()
 @Resolver(of => User)
@@ -32,6 +33,12 @@ export default class UserResolver {
     return session
   }
 
+  @Mutation(() => String)
+  public test (): string {
+    pubSub.publish('FRIENDS', 'testing')
+    return 'testing'
+  }
+
   @Subscription(() => [Friendship], {
     topics: 'FRIENDS'
   })
@@ -46,7 +53,7 @@ export default class UserResolver {
           include: {
             following: {
               include: {
-                whosfollowedBy: true
+                whosFollowedBy: true
               }
             }
           }

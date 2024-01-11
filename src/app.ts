@@ -2,7 +2,7 @@ import { Authorized, buildSchema } from 'type-graphql'
 import resolvers from './graphql/resolvers'
 import { type ResolversEnhanceMap, relationResolvers, applyResolversEnhanceMap } from '../prisma/generated/type-graphql'
 import { ApolloServer } from '@apollo/server'
-import { context } from './context'
+import { context, wsContext } from './context'
 import Container, { Service } from 'typedi'
 import { ServerCatch } from './decorators/catchs.decorator'
 import jobs from './jobs'
@@ -57,25 +57,27 @@ export default class App {
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const serverCleanup = useServer({ schema, context }, wsServer)
+    const serverCleanup = useServer({ schema, context: wsContext }, wsServer)
 
-    const server = new ApolloServer({
-      schema,
-      plugins: [
-        // Proper shutdown for the HTTP server.
-        ApolloServerPluginDrainHttpServer({ httpServer }),
+    const plugins = [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
 
-        // Proper shutdown for the WebSocket server.
-        {
-          async serverWillStart () {
-            return {
-              async drainServer () {
-                await serverCleanup.dispose()
-              }
+      // Proper shutdown for the WebSocket server.
+      {
+        async serverWillStart () {
+          return {
+            async drainServer () {
+              await serverCleanup.dispose()
             }
           }
         }
-      ]
+      }
+    ]
+
+    const server = new ApolloServer({
+      schema,
+      plugins
     })
 
     await server.start()

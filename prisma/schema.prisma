@@ -25,8 +25,8 @@ model User {
   role       String       @default("PLAYER")
   player     Player?
   Token      Session[]
-  followedBy Friendship[] @relation("whosfollowedBy")
-  following  Friendship[] @relation("whosfollowing")
+  followedBy Friendship[] @relation("whosFollowedBy")
+  following  Friendship[] @relation("whosFollowing")
 
   @@map("users")
 }
@@ -72,9 +72,9 @@ model Session {
 
 model Friendship {
   id             String   @unique @default(uuid())
-  whosfollowedBy User     @relation("whosfollowedBy", fields: [followedById], references: [id])
+  whosFollowedBy User     @relation("whosFollowedBy", fields: [followedById], references: [id])
   followedById   String
-  whosfollowing  User     @relation("whosfollowing", fields: [followingId], references: [id])
+  whosFollowing  User     @relation("whosFollowing", fields: [followingId], references: [id])
   followingId    String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
