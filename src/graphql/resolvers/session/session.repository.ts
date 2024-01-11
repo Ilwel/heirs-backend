@@ -21,4 +21,29 @@ export default class SessionRepository {
     }
     return session.user
   }
+
+  public async getUserWithFriends (ctx: IContext, token: string): Promise<User> {
+    const session = await ctx.prisma.session.findFirst({
+      where: {
+        token,
+        expired: false
+      },
+      include: {
+        user: {
+          include: {
+            following: {
+              include: {
+                whosFollowedBy: true
+              }
+            }
+          }
+        }
+      }
+    })
+    if ((session?.token) == null) {
+      const error = sessionExpiredOrNotFound()
+      throw error
+    }
+    return session.user
+  }
 }

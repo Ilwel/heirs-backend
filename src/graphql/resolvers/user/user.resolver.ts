@@ -5,12 +5,14 @@ import UserService, { CreateUser } from './user.service'
 import { IContext } from '../../../context'
 import { PrismaCatch } from '../../../decorators/catchs.decorator'
 import { pubSub } from '../../../pubSub'
+import SessionRepository from '../session/session.repository'
 
 @Service()
 @Resolver(of => User)
 export default class UserResolver {
   constructor (
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly sessionRepository: SessionRepository
   ) {}
 
   @Mutation(() => User)
@@ -43,28 +45,7 @@ export default class UserResolver {
     topics: 'FRIENDS'
   })
   @Authorized()
-  public async getFriends (@Ctx() ctx: IContext): Promise<Friendship []> {
-    const session = await ctx.prisma.session.findUnique({
-      where: {
-        token: ctx.token
-      },
-      include: {
-        user: {
-          include: {
-            following: {
-              include: {
-                whosFollowedBy: true
-              }
-            }
-          }
-        }
-      }
-    })
-    if ((session?.user) != null) {
-      const user = session?.user
-      return user.following
-    } else {
-      throw Error('deu ruim')
-    }
+  public async getFriends (@Ctx() ctx: IContext): Promise<Friendship [] | undefined> {
+    return (await this.sessionRepository.getUserWithFriends(ctx, ctx.token)).following
   }
 }
