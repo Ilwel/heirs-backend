@@ -3,10 +3,9 @@ import { type Session, type User } from '../../../../prisma/generated/type-graph
 import { type IContext } from '../../../context'
 import { ArgsType, Field } from 'type-graphql'
 import bcrypt from 'bcrypt'
-import { createUserPrismaQuery, findUserWhereUsernamePrismaQuery } from '../../prisma-queries/user.queries'
-
 import { userNotFoundLogAndError } from '../../../logs/error.log'
-import { createSessionAndConnectUserWhereUsernamePrismaQuery, findFirstSessionWhereUsernameAndNotExpiredPrismaQuery } from '../../prisma-queries/sesion.queries'
+import { UserRepository } from './user.repository'
+import SessionRepository from '../session/session.repository'
 
 @ArgsType()
 export class CreateUser {
@@ -19,48 +18,24 @@ export class CreateUser {
 
 @Service()
 export default class UserService {
+  constructor (
+    private readonly userRepository: UserRepository,
+    private readonly sessionRepository: SessionRepository
+  ) {}
+
   async signUp (ctx: IContext, createUser: CreateUser): Promise<User> {
-    const userCreated = await ctx.prisma.user.create({
-      data: createUserPrismaQuery(createUser.username, await this.hash(createUser.password))
-    })
-    return userCreated
+    return await this.userRepository.createUser(ctx, createUser)
   }
 
   async signIn (ctx: IContext, signInUser: CreateUser): Promise<Session> {
-    const user = await ctx.prisma.user.findUnique({
-      where: findUserWhereUsernamePrismaQuery(signInUser.username)
-    })
-    if ((user?.username) == null) {
-      const error = userNotFoundLogAndError()
-      throw error
-    }
+    const user = await this.userRepository.findUserByUsername(ctx, signInUser.username)
     const compare = await bcrypt.compare(signInUser.password, user.password) as boolean
     if (compare) {
-      const Session = await this.genSession(ctx, signInUser)
-      return Session
+      const session = await this.sessionRepository.createSession(ctx, signInUser)
+      return session
     } else {
       const error = userNotFoundLogAndError()
       throw error
     }
-  }
-
-  private async genSession (ctx: IContext, signInUser: CreateUser): Promise<Session> {
-    const session = await ctx.prisma.session.findFirst({
-      where: findFirstSessionWhereUsernameAndNotExpiredPrismaQuery(signInUser.username)
-    })
-    if ((session?.token) != null) {
-      return session
-    } else {
-      const newSession = await ctx.prisma.session.create({
-        data: createSessionAndConnectUserWhereUsernamePrismaQuery(signInUser.username)
-      })
-      return newSession
-    }
-  }
-
-  private async hash (toHash: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10)
-    const hashed = await bcrypt.hash(toHash, salt)
-    return hashed
   }
 }
