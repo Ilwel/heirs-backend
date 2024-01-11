@@ -1,18 +1,20 @@
 import { Args, Authorized, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
-import { Friendship, Session, User } from '../../../../prisma/generated/type-graphql'
+import { Board, Friendship, Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
 import { IContext } from '../../../context'
 import { PrismaCatch } from '../../../decorators/catchs.decorator'
 import { pubSub } from '../../../pubSub'
 import SessionRepository from '../session/session.repository'
+import { BoardRepository } from '../board/board.repository'
 
 @Service()
 @Resolver(of => User)
 export default class UserResolver {
   constructor (
     private readonly userService: UserService,
-    private readonly sessionRepository: SessionRepository
+    private readonly sessionRepository: SessionRepository,
+    private readonly boardRepository: BoardRepository
   ) {}
 
   @Mutation(() => User)
@@ -33,6 +35,13 @@ export default class UserResolver {
       console.log('🦖 sweet! an user logged in')
     }
     return session
+  }
+
+  @Mutation(() => Board)
+  @Authorized()
+  public async createBoard (@Ctx() ctx: IContext): Promise<Board> {
+    const board = await this.boardRepository.createBoardFromToken(ctx, ctx.token)
+    return board
   }
 
   @Mutation(() => String)
