@@ -32,6 +32,7 @@ export default class UserResolver {
 
   @Mutation(() => Game)
   @Authorized()
+  @PrismaCatch
   public async createMyBoard (@Ctx() ctx: IContext): Promise<Game> {
     const board = await this.gameService.createGame(ctx, ctx.token)
     return board
@@ -39,6 +40,7 @@ export default class UserResolver {
 
   @Mutation(() => String)
   @Authorized()
+  @PrismaCatch
   public async deleteMyBoard (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<string> {
     const removed = await this.gameService.deleteGame(ctx, ctx.token, id)
     return removed
@@ -46,6 +48,7 @@ export default class UserResolver {
 
   @Mutation(() => Game)
   @Authorized()
+  @PrismaCatch
   public async connectToBoard (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<Game> {
     const connected = await this.gameService.connectOnGame(ctx, ctx.token, id)
     return connected
@@ -55,6 +58,7 @@ export default class UserResolver {
     topics: ({ context }) => context.username
   })
   @Authorized()
+  @PrismaCatch
   public async getFriendsGames (@Ctx() ctx: IContext): Promise<Game []> {
     const friendsRelations = (await this.sessionRepository.getUserWithFriends(ctx, ctx.token)).following
     const friends = friendsRelations?.map(item => item.whosFollowedBy)
