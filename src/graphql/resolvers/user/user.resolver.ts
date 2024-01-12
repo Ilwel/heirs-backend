@@ -44,6 +44,13 @@ export default class UserResolver {
     return removed
   }
 
+  @Mutation(() => Game)
+  @Authorized()
+  public async connectToBoard (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<Game> {
+    const connected = await this.gameService.connectOnGame(ctx, ctx.token, id)
+    return connected
+  }
+
   @Subscription(() => [Game], {
     topics: ({ context }) => context.username
   })
