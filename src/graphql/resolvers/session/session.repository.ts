@@ -50,7 +50,14 @@ export default class SessionRepository {
           include: {
             following: {
               include: {
-                whosFollowedBy: true
+                whosFollowedBy: true,
+                whosFollowing: true
+              }
+            },
+            followedBy: {
+              include: {
+                whosFollowedBy: true,
+                whosFollowing: true
               }
             }
           }

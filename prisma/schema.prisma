@@ -23,40 +23,11 @@ model User {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   role       String       @default("PLAYER")
-  player     Player?
-  Token      Session[]
+  session    Session[]
   followedBy Friendship[] @relation("whosFollowedBy")
   following  Friendship[] @relation("whosFollowing")
 
   @@map("users")
-}
-
-model Board {
-  id        String   @unique @default(uuid())
-  players   Player[]
-  status    String   @default("NOT_STARTED")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("boards")
-}
-
-model Player {
-  id        String   @unique @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  /// @TypeGraphQL.omit(input: true)
-  money     String   @default("0")
-  /// @TypeGraphQL.omit(input: true)
-  square    String   @default("INIT")
-  /// @TypeGraphQL.omit(input: true)
-  palyable  Boolean  @default(false)
-  Board     Board?   @relation(fields: [boardId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  boardId   String?
-
-  @@map("players")
 }
 
 model Session {

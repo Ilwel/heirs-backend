@@ -1,11 +1,11 @@
 import { Arg, Args, Authorized, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
-import { Board, Friendship, Session, User } from '../../../../prisma/generated/type-graphql'
+import { Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
 import { IContext } from '../../../context'
 import { PrismaCatch } from '../../../decorators/catchs.decorator'
 import SessionRepository from '../session/session.repository'
-import { BoardRepository } from '../board/board.repository'
+import { Game, GameService } from '../../../game/game.service'
 
 @Service()
 @Resolver(of => User)
@@ -13,7 +13,7 @@ export default class UserResolver {
   constructor (
     private readonly userService: UserService,
     private readonly sessionRepository: SessionRepository,
-    private readonly boardRepository: BoardRepository
+    private readonly gameService: GameService
   ) {}
 
   @Mutation(() => User)
@@ -30,25 +30,28 @@ export default class UserResolver {
     return session
   }
 
-  @Mutation(() => Board)
+  @Mutation(() => Game)
   @Authorized()
-  public async createMyBoard (@Ctx() ctx: IContext): Promise<Board> {
-    const board = await this.boardRepository.createBoardFromToken(ctx, ctx.token)
+  public async createMyBoard (@Ctx() ctx: IContext): Promise<Game> {
+    const board = await this.gameService.createGame(ctx, ctx.token)
     return board
   }
 
   @Mutation(() => String)
   @Authorized()
   public async deleteMyBoard (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<string> {
-    const removed = await this.boardRepository.removeBoardFromToken(ctx, ctx.token, id)
+    const removed = await this.gameService.deleteGame(ctx, ctx.token, id)
     return removed
   }
 
-  @Subscription(() => [Friendship], {
-    topics: ({ args, context }) => context.username
+  @Subscription(() => [Game], {
+    topics: ({ context }) => context.username
   })
   @Authorized()
-  public async getFriends (@Ctx() ctx: IContext): Promise<Friendship [] | undefined> {
-    return (await this.sessionRepository.getUserWithFriends(ctx, ctx.token)).following
+  public async getFriendsGames (@Ctx() ctx: IContext): Promise<Game []> {
+    const friendsRelations = (await this.sessionRepository.getUserWithFriends(ctx, ctx.token)).following
+    const friends = friendsRelations?.map(item => item.whosFollowedBy)
+    const games = this.gameService.listAllFriendsGames(friends as User [])
+    return games
   }
 }

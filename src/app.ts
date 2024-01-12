@@ -1,6 +1,6 @@
-import { Authorized, buildSchema } from 'type-graphql'
+import { buildSchema } from 'type-graphql'
 import resolvers from './graphql/resolvers'
-import { type ResolversEnhanceMap, relationResolvers, applyResolversEnhanceMap } from '../prisma/generated/type-graphql'
+import { relationResolvers } from '../prisma/generated/type-graphql'
 import { ApolloServer } from '@apollo/server'
 import { context, wsContext } from './context'
 import Container, { Service } from 'typedi'
@@ -24,18 +24,6 @@ interface IStartServer {
 export default class App {
   @ServerCatch
   public async start (): Promise<IStartServer | undefined> {
-    const resolversEnhanceMap: ResolversEnhanceMap = {
-      Board: {
-        createOneBoard: [Authorized()],
-        updateOneBoard: [Authorized()]
-      },
-      Player: {
-        updateManyPlayer: [Authorized('ADMIN')]
-      }
-    }
-
-    applyResolversEnhanceMap(resolversEnhanceMap)
-
     for (const realtion of relationResolvers) {
       Service()(realtion)
     }
