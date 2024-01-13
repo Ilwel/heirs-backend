@@ -34,7 +34,7 @@ export default class UserResolver {
   @Mutation(() => Game)
   @Authorized()
   @PrismaCatch
-  public async createMyBoard (@Ctx() ctx: IContext): Promise<Game> {
+  public async createMyGame (@Ctx() ctx: IContext): Promise<Game> {
     const board = await this.gameService.createGame(ctx, ctx.token)
     return board
   }
@@ -42,7 +42,7 @@ export default class UserResolver {
   @Mutation(() => String)
   @Authorized()
   @PrismaCatch
-  public async deleteMyBoard (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<string> {
+  public async deleteMyGame (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<string> {
     const removed = await this.gameService.deleteGame(ctx, ctx.token, id)
     return removed
   }
