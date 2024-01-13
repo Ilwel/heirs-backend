@@ -1,4 +1,4 @@
-import { Arg, Args, Authorized, Ctx, Mutation, Resolver, Subscription } from 'type-graphql'
+import { Arg, Args, Authorized, Ctx, Mutation, Resolver, Root, Subscription } from 'type-graphql'
 import { Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
@@ -6,6 +6,7 @@ import { IContext } from '../../../context'
 import { PrismaCatch } from '../../../decorators/catchs.decorator'
 import SessionRepository from '../session/session.repository'
 import { Game, GameService } from '../../../game/game.service'
+import { GameArgs } from '../../args/game/game.args'
 
 @Service()
 @Resolver(of => User)
@@ -49,9 +50,16 @@ export default class UserResolver {
   @Mutation(() => Game)
   @Authorized()
   @PrismaCatch
-  public async connectToBoard (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<Game> {
-    const connected = await this.gameService.connectOnGame(ctx, ctx.token, id)
+  public async registerOnGame (@Ctx() ctx: IContext, @Arg('id') id: string): Promise<Game> {
+    const connected = await this.gameService.registerOnGame(ctx, ctx.token, id)
     return connected
+  }
+
+  @Mutation(() => String)
+  @Authorized()
+  public changeGameState (@Args(() => GameArgs) game: Game): string {
+    const updated = this.gameService.changeGameState(game)
+    return updated
   }
 
   @Subscription(() => [Game], {
@@ -64,5 +72,14 @@ export default class UserResolver {
     const friends = friendsRelations?.map(item => item.whosFollowedBy)
     const games = this.gameService.listAllFriendsGames(friends as User [])
     return games
+  }
+
+  @Subscription(() => Game, {
+    topics: ({ args }) => args.id
+  })
+  @Authorized()
+  @PrismaCatch
+  public async connectOnGame (@Arg('id') id: string, @Root() game: Game): Promise<Game> {
+    return game
   }
 }
