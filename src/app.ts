@@ -16,6 +16,8 @@ import cors from 'cors'
 import { expressMiddleware } from '@apollo/server/express4'
 import { pubSub } from './pubSub'
 
+//kd o git paizao
+
 interface IStartServer {
   server: ApolloServer
   url: string
