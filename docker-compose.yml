@@ -6,16 +6,14 @@ services:
     container_name: api
     working_dir: /usr/src/app
     build: .
-    volumes:
-      - .:/usr/src/app
+    command: sh -c "yarn prisma migrate dev && yarn start"
     ports:
       - "${PORT}:${PORT}"
-    command: npm start
     environment:
       NODE_ENV: development
     depends_on:
       - db
-    env_file: 
+    env_file:
       - .env
     logging:
       driver: json-file

@@ -5,13 +5,13 @@ FROM node:alpine
 WORKDIR /usr/src/app
 
 # Copie os arquivos de configuração do aplicativo (package.json e yarn.lock)
-COPY package.json yarn.lock ./
+COPY package.json ./
 
 # Instale as dependências do aplicativo
 RUN yarn install
 
 # Instale o pacote rimraf globalmente
-RUN yarn global add rimraf
+RUN yarn global add rimraf typescript
 
 # Copie todos os arquivos do aplicativo para o contêiner
 COPY . .
