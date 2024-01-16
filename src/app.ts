@@ -80,8 +80,8 @@ export default class App {
       })
     )
 
-    httpServer.listen(3000, () => {
-      console.log('🦖 sweet! the server is working at http://localhost:3000/graphql')
+    httpServer.listen(process.env.PORT || 3000, () => {
+      console.log(`🦖 sweet! the server is working at http://localhost:${process.env.PORT || 3000}/graphql`)
     })
 
     jobs()
