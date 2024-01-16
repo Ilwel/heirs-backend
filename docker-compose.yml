@@ -1,0 +1,42 @@
+version: '3'
+services:
+  # Serviço para a API em Express.js
+  api:
+    image: node:alpine
+    container_name: api
+    working_dir: /usr/src/app
+    build: .
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "${PORT}:${PORT}"
+    command: npm start
+    environment:
+      NODE_ENV: development
+    depends_on:
+      - db
+    env_file: 
+      - .env
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Serviço para o banco de dados PostgreSQL
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      POSTGRES_DB: ${DB}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
