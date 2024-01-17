@@ -5,6 +5,8 @@ services:
     image: node:alpine
     container_name: api
     working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
     build: .
     command: sh -c "yarn prisma migrate dev && yarn start"
     ports:
