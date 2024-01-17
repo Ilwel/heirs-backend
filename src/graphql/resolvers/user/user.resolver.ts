@@ -57,8 +57,8 @@ export default class UserResolver {
 
   @Mutation(() => String)
   @Authorized()
-  public changeGameState (@Args(() => GameArgs) game: Game): string {
-    const updated = this.gameService.changeGameState(game)
+  public async changeGameState (@Args(() => GameArgs) game: Game): Promise<string> {
+    const updated = await this.gameService.changeGameState(game)
     return updated
   }
 
@@ -70,7 +70,7 @@ export default class UserResolver {
   public async getFriendsGames (@Ctx() ctx: IContext): Promise<Game []> {
     const friendsRelations = (await this.sessionRepository.getUserWithFriends(ctx, ctx.token)).following
     const friends = friendsRelations?.map(item => item.whosFollowedBy)
-    const games = this.gameService.listAllFriendsGames(friends as User [])
+    const games = await this.gameService.listAllFriendsGames(friends as User [])
     return games
   }
 

@@ -15,8 +15,7 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import cors from 'cors'
 import { expressMiddleware } from '@apollo/server/express4'
 import { pubSub } from './pubSub'
-
-//kd o git paizao
+import { client } from './cache/redis.client'
 
 interface IStartServer {
   server: ApolloServer
@@ -26,6 +25,9 @@ interface IStartServer {
 export default class App {
   @ServerCatch
   public async start (): Promise<IStartServer | undefined> {
+    await client.connect()
+    console.log('🦖 sweet! redis service established')
+
     for (const realtion of relationResolvers) {
       Service()(realtion)
     }
@@ -80,8 +82,8 @@ export default class App {
       })
     )
 
-    httpServer.listen(process.env.PORT || 3000, () => {
-      console.log(`🦖 sweet! the server is working at http://localhost:${process.env.PORT || 3000}/graphql`)
+    httpServer.listen(process.env.PORT ?? 3000, () => {
+      console.log(`🦖 sweet! the server is working at http://localhost:${process.env.PORT ?? 3000}/graphql`)
     })
 
     jobs()

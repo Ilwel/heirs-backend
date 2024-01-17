@@ -6,6 +6,7 @@ import SessionRepository from '../graphql/resolvers/session/session.repository'
 import { type IContext } from '../context'
 import { v4 } from 'uuid'
 import { type GameArgs } from '../graphql/args/game/game.args'
+import { client } from '../cache/redis.client'
 
 @ObjectType()
 export class Game {
@@ -44,11 +45,7 @@ const initPlayer = {
 export class GameService {
   constructor (
     private readonly sessionRepository: SessionRepository
-  ) {
-    this.games = []
-  }
-
-  games: Game []
+  ) {}
 
   public async createGame (ctx: IContext, token: string): Promise<Game> {
     const user = await this.sessionRepository.getUserWithFriends(ctx, token)
@@ -58,33 +55,42 @@ export class GameService {
       players: [{ user, ...initPlayer }],
       status: 'created'
     }
-    this.games.push(newGame)
+    const games = await this.getCacheGames()
+    games.push(newGame)
+    const result = await this.setCacheGames(games)
+    console.log(result)
     this.friendsPublish(user, `${user.username} new game`)
     return newGame
   }
 
   public async registerOnGame (ctx: IContext, token: string, id: string): Promise<Game> {
     const user = await this.sessionRepository.getUserWithFriends(ctx, token)
-    const gameToUpdate = this.games.find(game => game.id === id)
+    const games = await this.getCacheGames()
+    const gameToUpdate = games.find(game => game.id === id)
     if (gameToUpdate == null) {
       throw Error('game not found')
     }
     gameToUpdate?.players.push({ user, ...initPlayer })
-    this.games.map(item => item.id === gameToUpdate?.id ? gameToUpdate : item)
+    games.map(item => item.id === gameToUpdate?.id ? gameToUpdate : item)
+    const result = await this.setCacheGames(games)
+    console.log(result)
     this.friendsPublish(user, `${user.username} get in the game`)
     return gameToUpdate
   }
 
   public async deleteGame (ctx: IContext, token: string, id: string): Promise<string> {
     const user = await this.sessionRepository.getUserWithFriends(ctx, token)
-    const filteredGames = this.games.filter(game => game.id !== id)
-    this.games = filteredGames
+    const games = await this.getCacheGames()
+    const filteredGames = games.filter(game => game.id !== id)
+    const result = await this.setCacheGames(filteredGames)
+    console.log(result)
     this.friendsPublish(user, `${user.username} remove game`)
     return 'game deleted'
   }
 
-  public changeGameState (game: GameArgs): string {
-    const gamesAtt = this.games.map(item => {
+  public async changeGameState (game: GameArgs): Promise<string> {
+    const games = await this.getCacheGames()
+    const gamesAtt = games.map(item => {
       if (item.id === game.id) {
         const aux = game.players.map((player, index) => ({ user: item.players[index].user, ...player }))
         game.players = aux
@@ -93,8 +99,9 @@ export class GameService {
         return item
       }
     })
-    this.games = gamesAtt
-    const sendGame = this.games.find(item => item.id === game.id)
+    const result = await this.setCacheGames(gamesAtt)
+    console.log(result)
+    const sendGame = games.find(item => item.id === game.id)
     if (sendGame != null) {
       this.gamePublish(sendGame)
       return 'game updeted'
@@ -102,15 +109,32 @@ export class GameService {
     return 'game not updeted'
   }
 
-  public listAllFriendsGames (friends: User []): Game [] {
+  public async listAllFriendsGames (friends: User []): Promise<Game []> {
     const friendGames: Game [] = []
     for (const friend of friends) {
-      const friendGame = this.games.find(game => game.players[0].user.username === friend.username)
+      const games = await this.getCacheGames()
+      const friendGame = games.find(game => game.players[0].user.username === friend.username)
       if (friendGame != null) {
         friendGames.push(friendGame)
       }
     }
     return friendGames
+  }
+
+  private async getCacheGames (): Promise<Game [] > {
+    const jsonGames = await client.get('games')
+    if (jsonGames != null) {
+      const games = JSON.parse(jsonGames) as Game []
+      return games
+    } else {
+      return []
+    }
+  }
+
+  private async setCacheGames (games: Game []): Promise<string> {
+    const result = await client.set('games', JSON.stringify(games))
+    if (result != null) return 'cached'
+    else return 'cache fail'
   }
 
   private friendsPublish (user: User, msg: string): void {
