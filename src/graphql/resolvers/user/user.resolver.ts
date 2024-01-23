@@ -6,7 +6,7 @@ import { IContext } from '../../../context'
 import { PrismaCatch } from '../../../decorators/catchs.decorator'
 import SessionRepository from '../session/session.repository'
 import { Game, GameService } from '../../../game/game.service'
-import { GameArgs } from '../../args/game/game.args'
+import { GameInput } from '../../input-type/game/game.input'
 
 @Service()
 @Resolver(of => User)
@@ -57,7 +57,7 @@ export default class UserResolver {
 
   @Mutation(() => String)
   @Authorized()
-  public async changeGameState (@Args(() => GameArgs) game: Game): Promise<string> {
+  public async changeGameState (@Arg('game') game: GameInput): Promise<string> {
     const updated = await this.gameService.changeGameState(game)
     return updated
   }

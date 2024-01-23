@@ -1,7 +1,7 @@
-import { ArgsType, Field, InputType } from 'type-graphql'
+import { Field, InputType } from 'type-graphql'
 
-@ArgsType()
-export class GameArgs {
+@InputType()
+export class GameInput {
   @Field(() => String, { nullable: true })
     id!: string
 

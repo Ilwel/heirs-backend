@@ -5,7 +5,7 @@ import { pubSub } from '../pubSub'
 import SessionRepository from '../graphql/resolvers/session/session.repository'
 import { type IContext } from '../context'
 import { v4 } from 'uuid'
-import { type GameArgs } from '../graphql/args/game/game.args'
+import { type GameInput } from '../graphql/input-type/game/game.input'
 import { client } from '../cache/redis.client'
 
 @ObjectType()
@@ -88,7 +88,7 @@ export class GameService {
     return 'game deleted'
   }
 
-  public async changeGameState (game: GameArgs): Promise<string> {
+  public async changeGameState (game: GameInput): Promise<string> {
     const games = await this.getCacheGames()
     const gamesAtt = games.map(item => {
       if (item.id === game.id) {
