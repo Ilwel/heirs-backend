@@ -90,15 +90,20 @@ export class GameService {
 
   public async changeGameState (game: GameInput): Promise<string> {
     const games = await this.getCacheGames()
-    const gamesAtt = games.map(item => {
-      if (item.id === game.id) {
-        const aux = game.players.map((player, index) => ({ user: item.players[index].user, ...player }))
-        game.players = aux
-        return game as Game
-      } else {
-        return item
-      }
-    })
+    let gamesAtt: Game [] = []
+    if (game.players.length === 0) {
+      gamesAtt = games.filter(item => item.id !== game.id)
+    } else {
+      gamesAtt = games.map(item => {
+        if (item.id === game.id) {
+          const aux = game.players.map((player, index) => ({ user: item.players[index].user, ...player }))
+          game.players = aux
+          return game as Game
+        } else {
+          return item
+        }
+      })
+    }
     const result = await this.setCacheGames(gamesAtt)
     console.log(result)
     const sendGame = games.find(item => item.id === game.id)
