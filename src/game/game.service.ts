@@ -88,11 +88,13 @@ export class GameService {
     return 'game deleted'
   }
 
-  public async changeGameState (game: GameInput): Promise<string> {
+  public async changeGameState (game: GameInput, ctx: IContext, token: string): Promise<string> {
     const games = await this.getCacheGames()
     let gamesAtt: Game [] = []
     if (game.players.length === 0) {
+      const user = await this.sessionRepository.getUserWithFriends(ctx, token)
       gamesAtt = games.filter(item => item.id !== game.id)
+      this.friendsPublish(user, `${user.username} remove game`)
     } else {
       gamesAtt = games.map(item => {
         if (item.id === game.id) {

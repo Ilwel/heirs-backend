@@ -57,8 +57,8 @@ export default class UserResolver {
 
   @Mutation(() => String)
   @Authorized()
-  public async changeGameState (@Arg('game') game: GameInput): Promise<string> {
-    const updated = await this.gameService.changeGameState(game)
+  public async changeGameState (@Arg('game') game: GameInput, @Ctx()ctx: IContext): Promise<string> {
+    const updated = await this.gameService.changeGameState(game, ctx, ctx.token)
     return updated
   }
 
