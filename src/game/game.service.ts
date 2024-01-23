@@ -31,7 +31,7 @@ export class Player {
   @Field(() => String)
     square!: string
 
-  @Field(() => String)
+  @Field(() => Boolean)
     playable!: boolean
 }
 
