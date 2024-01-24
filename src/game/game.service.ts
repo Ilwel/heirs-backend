@@ -75,6 +75,7 @@ export class GameService {
     const result = await this.setCacheGames(games)
     console.log(result)
     this.friendsPublish(user, `${user.username} get in the game`)
+    this.gamePublish(gameToUpdate)
     return gameToUpdate
   }
 
