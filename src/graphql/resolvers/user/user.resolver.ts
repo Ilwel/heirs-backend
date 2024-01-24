@@ -1,4 +1,4 @@
-import { Arg, Args, Authorized, Ctx, Mutation, Resolver, Root, Subscription } from 'type-graphql'
+import { Arg, Args, Authorized, Ctx, Mutation, Query, Resolver, Root, Subscription } from 'type-graphql'
 import { Session, User } from '../../../../prisma/generated/type-graphql'
 import { Service } from 'typedi'
 import UserService, { CreateUser } from './user.service'
@@ -60,6 +60,16 @@ export default class UserResolver {
   public async changeGameState (@Arg('game') game: GameInput, @Ctx()ctx: IContext): Promise<string> {
     const updated = await this.gameService.changeGameState(game, ctx, ctx.token)
     return updated
+  }
+
+  @Query(() => [Game])
+  @Authorized()
+  @PrismaCatch
+  public async queryFriendGames (@Ctx() ctx: IContext): Promise<Game []> {
+    const friendsRelations = (await this.sessionRepository.getUserWithFriends(ctx, ctx.token)).following
+    const friends = friendsRelations?.map(item => item.whosFollowedBy)
+    const games = await this.gameService.listAllFriendsGames(friends as User [])
+    return games
   }
 
   @Subscription(() => [Game], {

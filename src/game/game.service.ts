@@ -94,6 +94,8 @@ export class GameService {
     if (game.players.length === 0) {
       const user = await this.sessionRepository.getUserWithFriends(ctx, token)
       gamesAtt = games.filter(item => item.id !== game.id)
+      const result = await this.setCacheGames(gamesAtt)
+      console.log(result)
       this.friendsPublish(user, `${user.username} remove game`)
     } else {
       gamesAtt = games.map(item => {
@@ -105,9 +107,10 @@ export class GameService {
           return item
         }
       })
+      const result = await this.setCacheGames(gamesAtt)
+      console.log(result)
     }
-    const result = await this.setCacheGames(gamesAtt)
-    console.log(result)
+
     const sendGame = games.find(item => item.id === game.id)
     if (sendGame != null) {
       this.gamePublish(sendGame)
