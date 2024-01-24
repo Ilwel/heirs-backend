@@ -78,6 +78,15 @@ export class GameService {
     return gameToUpdate
   }
 
+  public async getGame (id: string): Promise<Game> {
+    const games = await this.getCacheGames()
+    const game = games.find(item => item.id === id)
+    if (game == null) {
+      throw Error('not found')
+    }
+    return game
+  }
+
   public async deleteGame (ctx: IContext, token: string, id: string): Promise<string> {
     const user = await this.sessionRepository.getUserWithFriends(ctx, token)
     const games = await this.getCacheGames()

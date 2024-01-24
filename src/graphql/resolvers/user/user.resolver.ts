@@ -47,6 +47,13 @@ export default class UserResolver {
     return removed
   }
 
+  @Query(() => Game)
+  @PrismaCatch
+  public async getGame (@Arg('id')id: string): Promise<Game> {
+    const game = await this.gameService.getGame(id)
+    return game
+  }
+
   @Mutation(() => Game)
   @Authorized()
   @PrismaCatch
