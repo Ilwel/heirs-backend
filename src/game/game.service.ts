@@ -99,7 +99,7 @@ export class GameService {
   }
 
   public async changeGameState (game: GameInput, ctx: IContext, token: string): Promise<string> {
-    const games = await this.getCacheGames()
+    let games = await this.getCacheGames()
     let gamesAtt: Game [] = []
     if (game.players.length === 0) {
       const user = await this.sessionRepository.getUserWithFriends(ctx, token)
@@ -120,7 +120,7 @@ export class GameService {
       const result = await this.setCacheGames(gamesAtt)
       console.log(result)
     }
-
+    games = await this.getCacheGames()
     const sendGame = games.find(item => item.id === game.id)
     if (sendGame != null) {
       this.gamePublish(sendGame)
