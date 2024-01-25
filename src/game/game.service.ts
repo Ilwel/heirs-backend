@@ -108,15 +108,7 @@ export class GameService {
       console.log(result)
       this.friendsPublish(user, `${user.username} remove game`)
     } else {
-      gamesAtt = games.map(item => {
-        if (item.id === game.id) {
-          const aux = game.players.map((player, index) => ({ user: item.players[index].user, ...player }))
-          game.players = aux
-          return game as Game
-        } else {
-          return item
-        }
-      })
+      gamesAtt = games.map(item => item.id === game.id ? game as Game : item)
       const result = await this.setCacheGames(gamesAtt)
       console.log(result)
     }
