@@ -23,6 +23,9 @@ export class UserInput {
     nullable: false
   })
     username!: string
+
+  @Field(() => String)
+    __typename!: string
 }
 
 @InputType()
@@ -38,4 +41,7 @@ export class PlayerType {
 
   @Field(() => UserInput)
     user!: UserInput
+
+  @Field(() => String)
+    __typename!: string
 }
