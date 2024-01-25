@@ -5,7 +5,7 @@ import { pubSub } from '../pubSub'
 import SessionRepository from '../graphql/resolvers/session/session.repository'
 import { type IContext } from '../context'
 import { v4 } from 'uuid'
-import { type GameInput } from '../graphql/input-type/game/game.input'
+import { type UserInput, type GameInput } from '../graphql/input-type/game/game.input'
 import { client } from '../cache/redis.client'
 
 @ObjectType()
@@ -23,7 +23,7 @@ export class Game {
 @ObjectType()
 export class Player {
   @Field(() => User)
-    user!: User
+    user!: User | UserInput
 
   @Field(() => String)
     money!: string
@@ -33,12 +33,16 @@ export class Player {
 
   @Field(() => Boolean)
     playable!: boolean
+
+  @Field(() => String)
+    __typename!: string
 }
 
 const initPlayer = {
   money: '0',
   square: 'INIT',
-  playable: false
+  playable: false,
+  __typename: 'Player'
 }
 
 @Service()
