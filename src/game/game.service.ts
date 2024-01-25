@@ -33,16 +33,12 @@ export class Player {
 
   @Field(() => Boolean)
     playable!: boolean
-
-  @Field(() => String)
-    __typename!: string
 }
 
 const initPlayer = {
   money: '0',
   square: 'INIT',
-  playable: false,
-  __typename: 'Player'
+  playable: false
 }
 
 @Service()
