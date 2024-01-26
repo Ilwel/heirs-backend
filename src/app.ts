@@ -73,7 +73,7 @@ export default class App {
     })
 
     await server.start()
-    app.use('/', (_, res) => {
+    app.get('/', (_, res) => {
       res.send('🦖 sweet! im in the internet')
     })
     app.use('/graphql',
