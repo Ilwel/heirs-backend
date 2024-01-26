@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon",
-    "build": "rimraf ./build && typescript",
-    "start": "yarn prisma migrate dev && yarn add typescript && yarn build && node build/src/server.js"
+    "build": "yarn prisma migrate dev && yarn add typescript && rimraf ./build && typescript",
+    "start": "yarn build && node build/src/server.js"
   },
   "keywords": [
     "Monopoly",
