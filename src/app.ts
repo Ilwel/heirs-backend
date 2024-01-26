@@ -73,6 +73,9 @@ export default class App {
     })
 
     await server.start()
+    app.use('/', (_, res) => {
+      res.send('🦖 sweet! im in the internet')
+    })
     app.use('/graphql',
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       cors<cors.CorsRequest>(),
