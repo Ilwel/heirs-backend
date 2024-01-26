@@ -13,6 +13,19 @@ export class GameInput {
 }
 
 @InputType()
+export class UserInput {
+  @Field(() => String, {
+    nullable: false
+  })
+    id!: string
+
+  @Field(() => String, {
+    nullable: false
+  })
+    username!: string
+}
+
+@InputType()
 export class PlayerType {
   @Field(() => String, { nullable: true })
     money!: string
@@ -22,4 +35,7 @@ export class PlayerType {
 
   @Field(() => Boolean, { nullable: true })
     playable!: boolean
+
+  @Field(() => UserInput)
+    user!: UserInput
 }
