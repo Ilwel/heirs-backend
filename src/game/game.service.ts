@@ -56,6 +56,12 @@ export class GameService {
       status: 'created'
     }
     const games = await this.getCacheGames()
+    const hasPlayer = games.find(game => game.players.map(item => item.user.id).includes(user.id))
+    if (hasPlayer != null) {
+      const removePlayer = hasPlayer.players.filter(item => item.user.id !== user.id)
+      hasPlayer.players = removePlayer
+      games.map(game => game.id === hasPlayer.id ? hasPlayer : game)
+    }
     games.push(newGame)
     const result = await this.setCacheGames(games)
     console.log(result)
