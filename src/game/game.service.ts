@@ -161,7 +161,6 @@ export class GameService {
   private friendsPublish (user: User, msg: string): void {
     if ((user?.followedBy) != null) {
       for (const friend of user.followedBy) {
-        console.log(friend)
         if ((friend.whosFollowing?.username) != null) {
           pubSub.publish(friend.whosFollowing?.username, msg)
         }
