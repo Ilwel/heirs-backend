@@ -10,6 +10,9 @@ export class GameInput {
 
   @Field(() => String, { nullable: true })
     status!: string
+
+  @Field(() => Number, { nullable: true })
+    turnPlayer!: number
 }
 
 @InputType()

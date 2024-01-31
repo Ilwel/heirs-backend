@@ -18,6 +18,9 @@ export class Game {
 
   @Field(() => String)
     status!: string
+
+  @Field(() => Number)
+    turnPlayer!: number
 }
 
 @ObjectType()
@@ -53,7 +56,8 @@ export class GameService {
     const newGame: Game = {
       id: uuid,
       players: [{ user, ...initPlayer }],
-      status: 'created'
+      status: 'created',
+      turnPlayer: 0
     }
     const games = await this.getCacheGames()
     const hasPlayer = games.find(game => game.players.map(item => item.user.id).includes(user.id))
