@@ -134,7 +134,7 @@ export class GameService {
     const friendGames: Game [] = []
     for (const friend of friends) {
       const games = await this.getCacheGames()
-      const friendGame = games.find(game => game.players[0].user.username === friend.username)
+      const friendGame = games.find(game => game.players[0]?.user.username === friend.username)
       if (friendGame != null) {
         friendGames.push(friendGame)
       }
