@@ -30,8 +30,8 @@ export class UserInput {
 
 @InputType()
 export class PlayerType {
-  @Field(() => String, { nullable: true })
-    money!: string
+  @Field(() => Number, { nullable: true })
+    money!: number
 
   @Field(() => String, { nullable: true })
     square!: string

@@ -28,8 +28,8 @@ export class Player {
   @Field(() => User)
     user!: User | UserInput
 
-  @Field(() => String)
-    money!: string
+  @Field(() => Number)
+    money!: number
 
   @Field(() => String)
     square!: string
@@ -42,7 +42,7 @@ export class Player {
 }
 
 const initPlayer = {
-  money: '0',
+  money: 0,
   square: 'INIT',
   playable: false
 }
