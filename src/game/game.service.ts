@@ -36,6 +36,9 @@ export class Player {
 
   @Field(() => Boolean)
     playable!: boolean
+
+  @Field(() => String)
+    role!: 'ADMIN' | 'PLAYER' | 'SPECTATOR'
 }
 
 const initPlayer = {
@@ -55,7 +58,7 @@ export class GameService {
     const uuid = v4()
     const newGame: Game = {
       id: uuid,
-      players: [{ user, ...initPlayer }],
+      players: [{ user, ...initPlayer, role: 'ADMIN' }],
       status: 'created',
       turnPlayer: 0
     }
@@ -82,7 +85,7 @@ export class GameService {
     }
     const hasPlayer = gameToUpdate.players.find(item => item.user.id === user.id)
     if (hasPlayer == null) {
-      gameToUpdate?.players.push({ user, ...initPlayer })
+      gameToUpdate?.players.push({ user, ...initPlayer, role: 'PLAYER' })
     }
     games.map(item => item.id === gameToUpdate?.id ? gameToUpdate : item)
     const result = await this.setCacheGames(games)

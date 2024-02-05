@@ -41,4 +41,7 @@ export class PlayerType {
 
   @Field(() => UserInput)
     user!: UserInput
+
+  @Field(() => String, { nullable: true })
+    role!: 'ADMIN' | 'PLAYER' | 'SPECTATOR'
 }
