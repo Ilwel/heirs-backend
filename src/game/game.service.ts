@@ -21,6 +21,21 @@ export class Game {
 
   @Field(() => Number)
     turnPlayer!: number
+
+  @Field(() => [ChatMsg])
+    chat!: ChatMsg []
+}
+
+@ObjectType()
+export class ChatMsg {
+  @Field(() => String)
+    msg!: string
+
+  @Field(() => String)
+    username!: string
+
+  @Field(() => String)
+    createdAt!: string
 }
 
 @ObjectType()
@@ -60,7 +75,8 @@ export class GameService {
       id: uuid,
       players: [{ user, ...initPlayer, role: 'ADMIN' }],
       status: 'created',
-      turnPlayer: 0
+      turnPlayer: 0,
+      chat: []
     }
     const games = await this.getCacheGames()
     const hasPlayer = games.find(game => game.players.map(item => item.user.id).includes(user.id))

@@ -13,6 +13,21 @@ export class GameInput {
 
   @Field(() => Number, { nullable: true })
     turnPlayer!: number
+
+  @Field(() => [ChatMsgInput])
+    chat!: ChatMsgInput []
+}
+
+@InputType()
+export class ChatMsgInput {
+  @Field(() => String)
+    msg!: string
+
+  @Field(() => String)
+    username!: string
+
+  @Field(() => String)
+    createdAt!: string
 }
 
 @InputType()
