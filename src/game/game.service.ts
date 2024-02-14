@@ -78,114 +78,149 @@ export class GameService {
       turnPlayer: 0,
       chat: []
     }
-    const games = await this.getCacheGames()
-    const hasPlayer = games.find(game => game.players.map(item => item.user.id).includes(user.id))
-    if (hasPlayer != null) {
-      const removePlayer = hasPlayer.players.filter(item => item.user.id !== user.id)
-      hasPlayer.players = removePlayer
-      games.map(game => game.id === hasPlayer.id ? hasPlayer : game)
-    }
-    games.push(newGame)
-    const result = await this.setCacheGames(games)
+    const result = await this.setCacheGame(newGame)
     console.log(result)
-    this.friendsPublish(user, `${user.username} new game`)
+    await this.friendsPublishSetGame(user, `${user.username} new game`, newGame)
     return newGame
   }
 
   public async registerOnGame (ctx: IContext, token: string, id: string): Promise<Game> {
     const user = await this.sessionRepository.getUserWithFriends(ctx, token)
-    const games = await this.getCacheGames()
-    const gameToUpdate = games.find(game => game.id === id)
-    if (gameToUpdate == null) {
-      throw Error('game not found')
+    const gameToUpdate = await this.getCacheGame(id)
+    if (typeof gameToUpdate === 'string') {
+      throw Error(gameToUpdate)
+    } else {
+      const hasPlayer = gameToUpdate.players.find(item => item.user.id === user.id)
+      if (hasPlayer == null) {
+        gameToUpdate?.players.push({ user, ...initPlayer, role: 'PLAYER' })
+      }
+      const result = await this.setCacheGame(gameToUpdate)
+      console.log(result)
+      await this.friendsPublishSetGame(user, `${user.username} get in the game`, gameToUpdate)
+      this.gamePublish(gameToUpdate)
+      return gameToUpdate
     }
-    const hasPlayer = gameToUpdate.players.find(item => item.user.id === user.id)
-    if (hasPlayer == null) {
-      gameToUpdate?.players.push({ user, ...initPlayer, role: 'PLAYER' })
-    }
-    games.map(item => item.id === gameToUpdate?.id ? gameToUpdate : item)
-    const result = await this.setCacheGames(games)
-    console.log(result)
-    this.friendsPublish(user, `${user.username} get in the game`)
-    this.gamePublish(gameToUpdate)
-    return gameToUpdate
   }
 
   public async getGame (id: string): Promise<Game> {
-    const games = await this.getCacheGames()
-    const game = games.find(item => item.id === id)
-    if (game == null) {
-      throw Error('not found')
+    const game = await this.getCacheGame(id)
+    if (typeof game === 'string') {
+      throw Error(game)
     }
     return game
   }
 
   public async deleteGame (ctx: IContext, token: string, id: string): Promise<string> {
     const user = await this.sessionRepository.getUserWithFriends(ctx, token)
-    const games = await this.getCacheGames()
-    const filteredGames = games.filter(game => game.id !== id)
-    const result = await this.setCacheGames(filteredGames)
+    const result = this.deleteCacheGame(id)
     console.log(result)
-    this.friendsPublish(user, `${user.username} remove game`)
+    await this.friendsPublishDeleteGame(user, `${user.username} remove game`, id)
     return 'game deleted'
   }
 
   public async changeGameState (game: GameInput, ctx: IContext, token: string): Promise<string> {
-    let games = await this.getCacheGames()
-    let gamesAtt: Game [] = []
     if (game.players.length === 0) {
-      const user = await this.sessionRepository.getUserWithFriends(ctx, token)
-      gamesAtt = games.filter(item => item.id !== game.id)
-      const result = await this.setCacheGames(gamesAtt)
-      console.log(result)
-      this.friendsPublish(user, `${user.username} remove game`)
-    } else {
-      gamesAtt = games.map(item => item.id === game.id ? game as Game : item)
-      const result = await this.setCacheGames(gamesAtt)
-      console.log(result)
-    }
-    games = await this.getCacheGames()
-    const sendGame = games.find(item => item.id === game.id)
-    if (sendGame != null) {
-      this.gamePublish(sendGame)
+      await this.deleteGame(ctx, token, game.id)
       return 'game updeted'
-    }
-    return 'game not updeted'
-  }
-
-  public async listAllFriendsGames (friends: User []): Promise<Game []> {
-    const friendGames: Game [] = []
-    for (const friend of friends) {
-      const games = await this.getCacheGames()
-      const friendGame = games.find(game => game.players[0]?.user.username === friend.username)
-      if (friendGame != null) {
-        friendGames.push(friendGame)
+    } else {
+      const user = await this.sessionRepository.getUser(ctx, token)
+      const hasPlayerYet = game.players.map(player => player.user.id).includes(user.id)
+      if (!hasPlayerYet) {
+        await this.friendsPublishDeleteGame(user, `${user.username} remove game`, game.id)
+      }
+      const result = await this.setCacheGame(game)
+      console.log(result)
+      if (result === 'cache fail') {
+        return 'game not updeted'
+      } else {
+        this.gamePublish(game)
+        return 'game updeted'
       }
     }
-    return friendGames
   }
 
-  private async getCacheGames (): Promise<Game [] > {
-    const jsonGames = await client.get('games')
-    if (jsonGames != null) {
-      const games = JSON.parse(jsonGames) as Game []
-      return games
+  public async listAllFriendsGames (id: string): Promise<Game []> {
+    console.log('subscription for friend games =>')
+    const games = await this.getFriendCacheGame(id)
+    return games
+  }
+
+  // private async getCacheGames (): Promise<Game []> {
+  //   const jsonKeys = await client.keys('*')
+  //   console.log('jsonGames: ', jsonKeys)
+  //   const games = []
+  //   for (const gameKey of jsonKeys) {
+  //     const result = await this.getCacheGame(gameKey)
+  //     if (typeof result !== 'string') {
+  //       games.push(result)
+  //     }
+  //   }
+  //   return games
+  // }
+
+  private async getCacheGame (id: string): Promise<Game | string> {
+    const jsonGame = await client.get(id)
+    if (jsonGame != null) {
+      const game = JSON.parse(jsonGame) as Game
+      return game
     } else {
-      return []
+      return 'game not found'
     }
   }
 
-  private async setCacheGames (games: Game []): Promise<string> {
-    const result = await client.set('games', JSON.stringify(games))
+  private async setCacheGame (game: Game): Promise<string> {
+    const result = await client.set(game.id, JSON.stringify(game))
     if (result != null) return 'cached'
     else return 'cache fail'
   }
 
-  private friendsPublish (user: User, msg: string): void {
+  private async deleteCacheGame (id: string): Promise<string> {
+    const result = await client.del(id)
+    if (result === 1) return 'deleted'
+    else return 'delete fail'
+  }
+
+  private async getFriendCacheGame (id: string): Promise<Game []> {
+    const jsonFriendGames = await client.get('friend-' + id) ?? '[]'
+    const parsedFriendGames = await JSON.parse(jsonFriendGames) as Game []
+    return parsedFriendGames
+  }
+
+  private async setFriendCacheGame (id: string, game: Game): Promise<string> {
+    const jsonFriendGames = await client.get(id) ?? '[]'
+    const parsedFriendGames = JSON.parse(jsonFriendGames) as Game []
+    parsedFriendGames.push(game)
+    const result = await client.set('friend-' + id, JSON.stringify(parsedFriendGames))
+    if (result != null) return 'cached friend game'
+    else return 'cache friend game fail'
+  }
+
+  private async deleteFriendCacheGame (id: string, gameId: string): Promise<string> {
+    const jsonFriendGames = await client.get('friend-' + id) ?? '[]'
+    const parsedFriendGames = JSON.parse(jsonFriendGames) as Game []
+    const filteredFriendGames = parsedFriendGames.filter(game => game.id !== gameId)
+    const result = await client.set('friend-' + id, JSON.stringify(filteredFriendGames))
+    if (result != null) return 'cached delete friend game'
+    else return 'cache delete friend game fail'
+  }
+
+  private async friendsPublishSetGame (user: User, msg: string, game: Game): Promise<void> {
     if ((user?.followedBy) != null) {
       for (const friend of user.followedBy) {
         if ((friend.whosFollowing?.username) != null) {
           pubSub.publish(friend.whosFollowing?.username, msg)
+          await this.setFriendCacheGame(friend.whosFollowing.id, game)
+        }
+      }
+    }
+  }
+
+  private async friendsPublishDeleteGame (user: User, msg: string, gameId: string): Promise<void> {
+    if ((user?.followedBy) != null) {
+      for (const friend of user.followedBy) {
+        if ((friend.whosFollowing?.username) != null) {
+          pubSub.publish(friend.whosFollowing?.username, msg)
+          await this.deleteFriendCacheGame(friend.whosFollowing.id, gameId)
         }
       }
     }

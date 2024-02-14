@@ -73,9 +73,8 @@ export default class UserResolver {
   @Authorized()
   @PrismaCatch
   public async queryFriendGames (@Ctx() ctx: IContext): Promise<Game []> {
-    const friendsRelations = (await this.sessionRepository.getUserWithFriends(ctx, ctx.token)).following
-    const friends = friendsRelations?.map(item => item.whosFollowedBy)
-    const games = await this.gameService.listAllFriendsGames(friends as User [])
+    const me = await this.sessionRepository.getUser(ctx, ctx.token)
+    const games = await this.gameService.listAllFriendsGames(me.id)
     return games
   }
 
@@ -85,9 +84,8 @@ export default class UserResolver {
   @Authorized()
   @PrismaCatch
   public async getFriendsGames (@Ctx() ctx: IContext): Promise<Game []> {
-    const friendsRelations = (await this.sessionRepository.getUserWithFriends(ctx, ctx.token)).following
-    const friends = friendsRelations?.map(item => item.whosFollowedBy)
-    const games = await this.gameService.listAllFriendsGames(friends as User [])
+    const me = await this.sessionRepository.getUser(ctx, ctx.token)
+    const games = await this.gameService.listAllFriendsGames(me.id)
     return games
   }
 
