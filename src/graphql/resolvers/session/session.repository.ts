@@ -70,4 +70,31 @@ export default class SessionRepository {
     }
     return session.user
   }
+
+  public async getUserWithFriendsById (ctx: IContext, id: string): Promise<User> {
+    const user = await ctx.prisma.user.findFirst({
+      where: {
+        id
+      },
+      include: {
+        following: {
+          include: {
+            whosFollowedBy: true,
+            whosFollowing: true
+          }
+        },
+        followedBy: {
+          include: {
+            whosFollowedBy: true,
+            whosFollowing: true
+          }
+        }
+      }
+    })
+    if (user == null) {
+      const error = sessionExpiredOrNotFound()
+      throw error
+    }
+    return user
+  }
 }
