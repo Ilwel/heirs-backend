@@ -5,7 +5,7 @@ import UserService, { CreateUser } from './user.service'
 import { IContext } from '../../../context'
 import { PrismaCatch } from '../../../decorators/catchs.decorator'
 import SessionRepository from '../session/session.repository'
-import { Game, GameService } from '../../../game/game.service'
+import { FriendsGamePayload, Game, GameService } from '../../../game/game.service'
 import { GameInput } from '../../input-type/game/game.input'
 
 @Service()
@@ -83,9 +83,9 @@ export default class UserResolver {
   })
   @Authorized()
   @PrismaCatch
-  public async getFriendsGames (@Ctx() ctx: IContext): Promise<Game []> {
+  public async getFriendsGames (@Root() payload: FriendsGamePayload, @Ctx() ctx: IContext): Promise<Game []> {
     const me = await this.sessionRepository.getUser(ctx, ctx.token)
-    const games = await this.gameService.listAllFriendsGames(me.id)
+    const games = await this.gameService.listAllFriendsGamesWithPayload(me.id, payload)
     return games
   }
 
