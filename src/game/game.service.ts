@@ -69,7 +69,8 @@ export class GameService {
   ) {}
 
   public async createGame (ctx: IContext, token: string): Promise<Game> {
-    const user = await this.sessionRepository.getUserWithFriends(ctx, token)
+    const user = await this.sessionRepository.getUser(ctx, token)
+    const userWithFriends = await this.sessionRepository.getUserWithFriends(ctx, token)
     const uuid = v4()
     const newGame: Game = {
       id: uuid,
@@ -80,12 +81,12 @@ export class GameService {
     }
     const result = await this.setCacheGame(newGame)
     console.log(result)
-    await this.friendsPublishSetGame(user, `${user.username} new game`, newGame)
+    await this.friendsPublishSetGame(userWithFriends, `${user.username} new game`, newGame)
     return newGame
   }
 
   public async registerOnGame (ctx: IContext, token: string, id: string): Promise<Game> {
-    const user = await this.sessionRepository.getUserWithFriends(ctx, token)
+    const user = await this.sessionRepository.getUser(ctx, token)
     const gameToUpdate = await this.getCacheGame(id)
     if (typeof gameToUpdate === 'string') {
       throw Error(gameToUpdate)
@@ -96,7 +97,6 @@ export class GameService {
       }
       const result = await this.setCacheGame(gameToUpdate)
       console.log(result)
-      await this.friendsPublishSetGame(user, `${user.username} get in the game`, gameToUpdate)
       this.gamePublish(gameToUpdate)
       return gameToUpdate
     }
@@ -111,10 +111,11 @@ export class GameService {
   }
 
   public async deleteGame (ctx: IContext, token: string, id: string): Promise<string> {
-    const user = await this.sessionRepository.getUserWithFriends(ctx, token)
+    const user = await this.sessionRepository.getUser(ctx, token)
+    const userWithFriends = await this.sessionRepository.getUserWithFriends(ctx, token)
     const result = this.deleteCacheGame(id)
     console.log(result)
-    await this.friendsPublishDeleteGame(user, `${user.username} remove game`, id)
+    await this.friendsPublishDeleteGame(userWithFriends, `${user.username} remove game`, id)
     return 'game deleted'
   }
 
@@ -124,9 +125,17 @@ export class GameService {
       return 'game updeted'
     } else {
       const user = await this.sessionRepository.getUser(ctx, token)
+      const userWithFriends = await this.sessionRepository.getUserWithFriends(ctx, token)
+      const hasAdmim = game.players.find(player => player.role === 'ADMIN')
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (!hasAdmim) {
+        game.players[0].role = 'ADMIN'
+        const adminWithFriends = await this.sessionRepository.getUserWithFriendsById(ctx, game.players[0].user.id)
+        await this.friendsPublishSetGame(adminWithFriends, `${user.username} remove game`, game)
+      }
       const hasPlayerYet = game.players.map(player => player.user.id).includes(user.id)
       if (!hasPlayerYet) {
-        await this.friendsPublishDeleteGame(user, `${user.username} remove game`, game.id)
+        await this.friendsPublishDeleteGame(userWithFriends, `${user.username} remove game`, game.id)
       }
       const result = await this.setCacheGame(game)
       console.log(result)
